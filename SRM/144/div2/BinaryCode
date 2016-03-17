@@ -1,0 +1,42 @@
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+class BinaryCode
+{
+public:
+	vector<string> decode(string message)
+	{
+		vector<string> res;
+		res.push_back(parse(message, 0));
+		res.push_back(parse(message, 1));
+		return res;
+	}
+	
+	string parse(string message, int first)
+	{
+		string res = (first ? "1" : "0");
+		if(message.size() == 1)
+			return res == message ? res : "NONE";
+			
+		for(size_t i = 0;i < message.size() - 1; ++i)
+		{
+			int tmp;
+			if(!i)
+			{
+				tmp = (message[i] - '0') - (res[i] - '0');
+			}
+			else
+			{
+				tmp = (message[i] - '0') - (res[i] - '0') - (res[i - 1] - '0');
+			}
+			if(tmp != 0 && tmp != 1)
+				return string("NONE");
+			res += tmp ? "1" : "0";
+		}
+		if(message[message.size() - 1] - '0' == (res[res.size() - 1] - '0') + (res[res.size() - 2] - '0'))
+			return res;
+		return string("NONE");
+	}
+};

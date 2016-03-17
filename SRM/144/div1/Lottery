@@ -1,0 +1,129 @@
+#include <iostream>
+#include <cstring>
+#include <cstdio>
+#include <cstdlib>
+#include <string>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+struct Point
+{
+	string name;
+	int m;
+	int n;
+	bool sorted;
+	bool unique;
+	int64_t score;
+
+	bool operator < (const Point& p) const
+	{
+		if(score == p.score)
+			return name < p.name;
+		return score < p.score;
+	}
+};
+
+class Lottery
+{
+public:
+	Lottery()
+	{
+		memset(matrixOfTF, 0, sizeof(matrixOfTF));
+		for(int i = 1;i <= 100; ++i)
+			for(int j = 1; j <= i && j <= 8; j++)
+				matrixOfTF[i][j] = TF(i, j);
+	}
+
+	vector <string> sortByOdds(vector <string> rules)
+	{
+		vector<Point> v;
+		vector<string> res;
+
+		for(size_t i = 0;i < rules.size(); ++i)
+		{
+			v.push_back(parse(rules[i]));
+		}
+		sort(v.begin(), v.end());
+		for(size_t i = 0;i < v.size(); ++i)
+		{
+			res.push_back(v[i].name);
+		}
+		return res;
+	}
+
+	Point parse(const string& str)
+	{
+		Point res;
+		size_t pos = str.find(":");
+		res.name = str.substr(0, pos);
+		size_t pos2 = str.find(" ", pos + 2);
+
+		res.m = atoi(str.substr(pos + 2, pos2 - pos - 1).c_str());
+		pos = str.find(" ", pos2 + 1);
+		res.n = atoi(str.substr(pos2 + 1, pos - pos2 - 1).c_str());
+
+		if(str[pos + 1] == 'T')
+			res.sorted = true;
+		else
+			res.sorted = false;
+		if(str[pos + 3] == 'T')
+			res.unique = true;
+		else
+			res.unique = false;
+
+		if(!res.sorted && !res.unique)
+			res.score = FF(res.m, res.n);
+		else if(res.sorted && !res.unique)
+			res.score = TF(res.m, res.n);
+		else if(!res.sorted && res.unique)
+			res.score = FT(res.m, res.n);
+		else if(res.sorted && res.unique)
+			res.score = TT(res.m, res.n);
+
+		return res;
+	}
+
+	int64_t FF(int m, int n)
+	{
+		int64_t res = 1;
+		while(n--)
+			res *= m;
+		return res;
+	}
+
+	int64_t TF(int m, int n)
+	{
+		if(n == 1 || m == 1)
+			matrixOfTF[m][n] =  m;
+		if(matrixOfTF[m][n])
+			return matrixOfTF[m][n];
+		for(int i = 1;i <= m; ++i)
+			matrixOfTF[m][n] += TF(m - i + 1, n - 1);
+		return matrixOfTF[m][n];
+	}
+
+	int64_t FT(int m, int n)
+	{
+		int64_t res = 1;
+		while(n--)
+			res *= m--;
+		return res;
+	}
+
+	int64_t TT(int m, int n)
+	{
+		int tmp1 = max(n, m - n);
+		int tmp2 = min(n, m - n);
+		int64_t res = 1;
+		for(int i = m;i > tmp1; --i)
+			res *= i;
+		for(int i = 1;i <= tmp2; ++i)
+			res /= i;
+		return res;
+	}
+
+private:
+	int64_t matrixOfTF[101][101];
+};
+

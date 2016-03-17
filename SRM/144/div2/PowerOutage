@@ -1,0 +1,30 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+
+class PowerOutage
+{
+public:
+	int estimateTimeOut(vector<int> fromJunction, vector<int> toJunction, vector<int> ductLength)
+	{
+		vector<vector<int> > tree(50, vector<int>(50, -1));
+		int sum = 0;
+		for(size_t i = 0;i < fromJunction.size(); ++i)
+		{
+			sum += ductLength[i];
+			tree[fromJunction[i]][toJunction[i]] = ductLength[i];
+		}
+		return sum * 2 - maxRoute(0, tree);
+	}
+	
+	int maxRoute(int root, vector<vector<int> > tree)
+	{
+		int maxValue = 0;
+		for(size_t i = 0;i < tree[root].size(); ++i)
+			if(tree[root][i] > 0)
+			{
+				maxValue = max(maxValue, tree[root][i] + maxRoute(i, tree));
+			}
+		return maxValue;
+	}
+};
