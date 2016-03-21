@@ -1,0 +1,24 @@
+#include <iostream>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
+#include <string>
+using namespace std;
+
+class ExerciseMachine
+{
+public:
+	int getPercentages(string time)
+	{
+		int h = atoi(time.substr(0, 2).c_str());
+		int m = atoi(time.substr(3, 2).c_str());
+		int s = atoi(time.substr(6, 2).c_str());
+		s += h * 3600 + m * 60;
+		int res = 0;
+		for(int i = 1; i < s; ++i)
+			if(i * 100 % s == 0)
+				++res;
+		return res;
+	}
+};
+
