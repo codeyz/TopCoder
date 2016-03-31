@@ -1,0 +1,128 @@
+#include <iostream>
+#include <algorithm>
+#include <cstdio>
+#include <vector>
+#include <string>
+using namespace std;
+
+struct Purchase
+{
+	int shelf;
+	int column;
+	int time;
+};
+
+class VendingMachine
+{
+public:
+	int motorUse(vector <string> pricesStr, vector <string> purchasesStr)
+	{
+		//transform pricesStr to an array of vector
+		size_t numOfShelves = pricesStr.size();
+		size_t numOfColumns = std::count(pricesStr[0].begin(), pricesStr[0].end(), ' ') + 1;
+		vector<vector<int> > prices(numOfShelves, vector<int>(numOfColumns, 0));
+		for(size_t i = 0;i < pricesStr.size(); ++i)
+		{
+			size_t pos = 0;
+			size_t nextpos = pricesStr[i].find(' ', pos);
+			int j = 0;
+			while(nextpos != string::npos)
+			{
+				prices[i][j++] = atoi(pricesStr[i].substr(pos, nextpos - pos).c_str());
+				pos = nextpos + 1;
+				nextpos = pricesStr[i].find(' ', pos);
+			}
+			prices[i][j++] = atoi(pricesStr[i].substr(pos, pricesStr[i].size()).c_str());
+		}
+		
+		//transform purchasesStr to an array of Purchase
+		vector<Purchase> purchases;
+		for(size_t i = 0;i < purchasesStr.size(); ++i)
+		{
+			Purchase p;
+			size_t pos = 0;
+			size_t nextpos = purchasesStr[i].find(',', pos);
+			p.shelf = atoi(purchasesStr[i].substr(pos, nextpos - pos).c_str());
+			pos = nextpos + 1;
+			nextpos = purchasesStr[i].find(':', pos);
+			p.column = atoi(purchasesStr[i].substr(pos, nextpos - pos).c_str());
+			p.time = atoi(purchasesStr[i].substr(nextpos + 1, purchasesStr[i].size()).c_str());
+			purchases.push_back(p);
+		}
+
+		/*
+		// check transformation
+		cout << "prices: " << endl;
+		for(size_t i = 0;i < prices.size(); ++i)
+		{
+			for(size_t j = 0;j < prices[i].size(); ++j)
+				cout << prices[i][j] << ' ';
+			cout << endl;
+		}
+
+
+		cout << "purchases: " << endl;
+		for(size_t i = 0;i < purchases.size(); ++i)
+		{
+			cout << purchases[i].shelf << "," << purchases[i].column << ":" << purchases[i].time << endl;
+		}
+		*/
+
+		int sec = 0;
+		int currentId = 0;
+		resetColumnId(currentId, sec, prices);
+		for(size_t i = 0;i < purchases.size(); ++i)
+		{
+			// sold out already
+			if(!prices[purchases[i].shelf][purchases[i].column])
+				return -1;
+			if(i && purchases[i].time - purchases[i - 1].time >= 5)
+			{
+				resetColumnId(currentId, sec, prices);
+			}
+			sec += getMinStep(currentId, purchases[i].column, prices[0].size());
+			currentId = purchases[i].column;
+			prices[purchases[i].shelf][purchases[i].column] = 0;
+		}
+		resetColumnId(currentId, sec, prices);
+		return sec;
+	}
+
+	int findMaxColumn(const vector<vector<int> >& prices)
+	{
+		int maxColumnId = 0;
+		int maxPrices = 0;
+		for(size_t i = 0;i < prices.size(); ++i)
+			maxPrices += prices[i][0];
+		for(size_t j = 0; j < prices[0].size(); ++j)
+		{
+			int tmp = 0;
+			for(size_t i = 0;i < prices.size(); ++i)
+				tmp += prices[i][j];
+			if(tmp > maxPrices)
+			{
+				maxColumnId = j;
+				maxPrices = tmp;
+			}
+		}
+		return maxColumnId;
+	}
+	
+	int getMinStep(int currentId, int nextId, int numOfColumns)
+	{
+		--numOfColumns;
+		if(currentId == nextId)
+			return 0;
+		if(currentId < nextId)
+			return min(nextId - currentId, currentId + 1 + numOfColumns - nextId);
+		return min(currentId - nextId, nextId + 1 + numOfColumns - currentId);
+	}
+
+	void resetColumnId(int& currentId, int& sec, const vector<vector<int> >& prices)
+	{
+		int next = findMaxColumn(prices);
+		sec += getMinStep(currentId, next, prices[0].size());
+		currentId = next;
+	}
+};
+

@@ -1,0 +1,64 @@
+#include <iostream>
+#include <cmath>
+#include <algorithm>
+#include <vector>
+using namespace std;
+
+struct Employee
+{
+	int id;
+	int points;
+	int percent;
+};
+
+
+bool cmp1(const Employee& e1, const Employee& e2)
+{
+	if(e1.points == e2.points)
+		return e1.id < e2.id;
+	return e1.points > e2.points;
+}
+
+bool cmp2(const Employee& e1, const Employee& e2)
+{
+	return e1.id < e2.id;
+}
+
+
+class Bonuses
+{
+public:
+	vector <int> getDivision(vector <int> points)
+	{
+		//init
+		vector<Employee> employees(points.size());
+		int sumOfPoints = 0;
+		int sumOfPercent = 100;
+		for(size_t i = 0;i < points.size(); ++i)
+		{
+			employees[i].id = i;
+			employees[i].points = points[i];
+			sumOfPoints += points[i];
+		}
+		for(size_t i = 0;i < employees.size(); ++i)
+		{
+			int percent = floor(employees[i].points * 100.0 / sumOfPoints);
+			employees[i].percent = percent;
+			sumOfPercent -= percent;
+		}
+		if(sumOfPercent)
+		{
+			sort(employees.begin(), employees.end(), cmp1);
+			for(size_t i = 0;i < employees.size() && sumOfPercent; ++i, --sumOfPercent)
+			{
+				++employees[i].percent;
+			}
+		}
+		sort(employees.begin(), employees.end(), cmp2);
+		vector<int> res(employees.size());
+		for(size_t i = 0; i < employees.size(); ++i)
+			res[i] = employees[i].percent;
+		return res;
+	}
+};
+
