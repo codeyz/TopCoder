@@ -1,0 +1,14 @@
+class RectangularGrid
+{
+public:
+	long long countRectangles(int width, int height)
+	{
+		long long sum = 0;
+		for(int i = 1;i <= width; ++i)
+			for(int j = 1;j <= height; ++j)
+				if(i != j)
+					sum += (width + 1 - i) * (height + 1 - j);
+		return sum;
+	}
+};
+
